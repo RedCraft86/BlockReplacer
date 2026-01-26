@@ -3,17 +3,13 @@ package com.redcraft86.blockreplacer;
 import java.util.Map;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-
 import net.neoforged.fml.common.Mod;
 
 @Mod(BlockReplacer.MOD_ID)
@@ -21,15 +17,15 @@ public class BlockReplacer {
     public static final String MOD_ID = "blockreplacer";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final Map<Block, Int2ObjectOpenHashMap<Property<?>>> STATE_CACHE = new Reference2ReferenceOpenHashMap<>();
-    private static final Map<Block, Block> MAPPINGS = new Object2ObjectOpenHashMap<>();
+    private static final Map<Block, BlockReplacement> REPLACEMENTS = new Object2ObjectOpenHashMap<>();
 
     public BlockReplacer() {
         processConfig();
     }
 
     public static void processConfig() {
-        ReplaceCfg.get().replaceBlocks.forEach((toId, targets) -> {
+        final Map<Block, Block> mappings = new Object2ObjectOpenHashMap<>();
+        ModConfig.get().replaceBlocks.forEach((toId, targets) -> {
             Block toBlock = getBlockFromId(toId);
             if (toBlock == null) {
                 return;
@@ -37,52 +33,34 @@ public class BlockReplacer {
 
             targets.forEach(fromId -> {
                 Block fromBlock = getBlockFromId(fromId);
-                if (fromBlock != null && !isSupported(fromBlock, toBlock)) {
-                    MAPPINGS.put(fromBlock, toBlock);
+                if (fromBlock != null && !isSupported(fromBlock, toBlock, mappings)) {
+                    REPLACEMENTS.put(fromBlock, new BlockReplacement(toBlock));
+                    mappings.put(fromBlock, toBlock);
                 }
             });
         });
     }
 
-    @SuppressWarnings("unchecked")
-    public static BlockState processBlock(BlockState currentState) {
-        if (currentState == null) {
-            return currentState;
-        }
-
-        Block currentBlock = currentState.getBlock();
-        if (!MAPPINGS.containsKey(currentBlock)) {
-            return currentState;
-        }
-
-        final Block targetBlock = MAPPINGS.get(currentBlock);
-        Int2ObjectOpenHashMap<Property<?>> defaultProps = STATE_CACHE.computeIfAbsent(
-            targetBlock, k -> {
-                Int2ObjectOpenHashMap<Property<?>> properties = new Int2ObjectOpenHashMap<>();
-                for (Property<?> property : k.defaultBlockState().getProperties()) {
-                    properties.put(property.generateHashCode(), property);
-                }
-                return properties;
-            }
-        );
-
-        // Basically look for overlapping properties between the current and targets states.
-        // Overlaps from current will override the targets' to preserve as much data as possible.
-        BlockState targetState = targetBlock.defaultBlockState();
-        for (Property<?> property : currentState.getProperties()) {
-            //noinspection rawtypes
-            Property prop = defaultProps.get(property.generateHashCode());
-            if (prop != null) {
-                targetState = targetState.setValue(prop, currentState.getValue(prop));
-            }
-        }
-
-        return targetState;
+    public static boolean needsReplacing(BlockState state) {
+        return REPLACEMENTS.containsKey(state.getBlock());
     }
 
-    private static boolean isSupported(Block from, Block to) {
-        if (MAPPINGS.containsKey(from)) {
-            Block replacement = MAPPINGS.get(from);
+    public static BlockState processBlock(BlockState oldState) {
+        if (oldState == null) {
+            return null;
+        }
+
+        Block currentBlock = oldState.getBlock();
+        if (!REPLACEMENTS.containsKey(currentBlock)) {
+            return null;
+        }
+
+        return REPLACEMENTS.get(currentBlock).replace(oldState);
+    }
+
+    private static boolean isSupported(Block from, Block to, Map<Block, Block> checkMappings) {
+        if (checkMappings.containsKey(from)) {
+            Block replacement = checkMappings.get(from);
             if (replacement != to) {
                 LOGGER.error("Multi Replacement: Block {} is already being replaced by {} but wants to also be replaced by {}",
                         getIdFromBlock(from), getIdFromBlock(replacement), getIdFromBlock(to)
@@ -91,15 +69,15 @@ public class BlockReplacer {
             }
         }
 
-        if (MAPPINGS.containsValue(from)) {
+        if (checkMappings.containsValue(from)) {
             LOGGER.error("Chain Replacement: Block {} will be replaced by {} but it itself needs to replace another block",
                     getIdFromBlock(from), getIdFromBlock(to)
             );
             return true;
         }
 
-        if (MAPPINGS.containsKey(to)) {
-            if (MAPPINGS.get(to).equals(from)) {
+        if (checkMappings.containsKey(to)) {
+            if (checkMappings.get(to).equals(from)) {
                 LOGGER.error("Circular Replacement: Block {} and {} are replacing each other",
                         getIdFromBlock(from), getIdFromBlock(to)
                 );

@@ -3,7 +3,8 @@
   "package": "com.redcraft86.blockreplacer.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-
+    "MixinLevel",
+    "MixinLevelChunkSection"
   ],
   "injectors": {
     "defaultRequire": 1
