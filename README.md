@@ -1,7 +1,7 @@
 A Minecraft mod to replace blocks and items in the world to other blocks and items. Intended to deduplicate same content added by multiple mods.
 For instance, if you install all 3 of the major Biome Gen mods, you may end up with 3 different redwood types, with this mod, you can only keep one.  
 
-The goal of this mod is similar to another mod [BlockSwap](https://github.com/CorgiTaco-MC/Block-Swap) but implemented differently with my own convenience features.
+The goal of this mod is similar to another mod [BlockSwap](https://github.com/CorgiTaco-MC/Block-Swap) but with a simpler implementation while we wait for it to update.
 
 ### **Modpack Usage**
 You may include this mod into your own modpacks as long as it is distributed through CurseForge, Modrinth, or any other recognized mainstream modding platforms that may exist in the future.
