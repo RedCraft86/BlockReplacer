@@ -1,6 +1,5 @@
 package com.redcraft86.blockreplacer;
 
-import java.util.Map;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -17,14 +16,15 @@ public final class BlockReplacer {
     public static final String MOD_ID = "blockreplacer";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final Map<Block, BlockReplacement> REPLACEMENTS = new Object2ObjectOpenHashMap<>();
+    private static final Object2ObjectOpenHashMap<Block, BlockReplacement> REPLACEMENTS
+            = new Object2ObjectOpenHashMap<>();
 
     public BlockReplacer() {
         processConfig();
     }
 
     public static void processConfig() {
-        final Map<Block, Block> mappings = new Object2ObjectOpenHashMap<>();
+        final Object2ObjectOpenHashMap<Block, Block> mappings = new Object2ObjectOpenHashMap<>();
         ModConfig.get().replaceBlocks.forEach((toId, targets) -> {
             Block toBlock = getBlockFromId(toId);
             if (toBlock == null) {
@@ -58,7 +58,7 @@ public final class BlockReplacer {
         return REPLACEMENTS.get(currentBlock).replace(oldState);
     }
 
-    private static boolean isSupported(Block from, Block to, Map<Block, Block> checkMappings) {
+    private static boolean isSupported(Block from, Block to, Object2ObjectOpenHashMap<Block, Block> checkMappings) {
         if (checkMappings.containsKey(from)) {
             Block replacement = checkMappings.get(from);
             if (replacement != to) {

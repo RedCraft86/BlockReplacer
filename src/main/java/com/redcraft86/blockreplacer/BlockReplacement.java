@@ -1,21 +1,21 @@
 package com.redcraft86.blockreplacer;
 
-import java.util.Map;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public record BlockReplacement(Block newBlock) {
-    private static final Map<Block, Int2ObjectOpenHashMap<Property<?>>> PROPERTY_CACHE = new Reference2ReferenceOpenHashMap<>();
+    private static final Object2ObjectOpenHashMap<Block, Int2ObjectOpenHashMap<Property<?>>> PROPERTY_CACHE
+            = new Object2ObjectOpenHashMap<>();
 
     @SuppressWarnings("unchecked")
     public BlockState replace(BlockState oldState) {
         Int2ObjectOpenHashMap<Property<?>> newProps = PROPERTY_CACHE.computeIfAbsent(newBlock, k -> {
             Int2ObjectOpenHashMap<Property<?>> properties = new Int2ObjectOpenHashMap<>();
-            for (Property<?> property : k.defaultBlockState().getProperties()) {
+            for (Property<?> property : newBlock.defaultBlockState().getProperties()) {
                 properties.put(property.generateHashCode(), property);
             }
             return properties;
