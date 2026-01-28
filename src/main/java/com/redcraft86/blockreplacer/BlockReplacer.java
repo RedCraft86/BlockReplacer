@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.common.Mod;
 
 @Mod(BlockReplacer.MOD_ID)
-public class BlockReplacer {
+public final class BlockReplacer {
     public static final String MOD_ID = "blockreplacer";
     public static final Logger LOGGER = LogUtils.getLogger();
 

@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import com.redcraft86.lanternlib.api.config.*;
 
-public class ModConfig extends JsonConfig {
+public final class ModConfig extends JsonConfig {
     public static ModConfig INSTANCE = null;
 
     public static ModConfig get() {
