@@ -20,7 +20,7 @@ public abstract class MixinLevel {
         method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z",
         at = @At("HEAD"), cancellable = true
     )
-    private void isIncompatibleBlock(BlockPos pos, BlockState state, int i, CallbackInfoReturnable<Boolean> cir) {
+    private void sbr_isIncompatibleBlock(BlockPos pos, BlockState state, int i, CallbackInfoReturnable<Boolean> cir) {
         if (BlockReplacer.needsReplacing(state)) {
             cir.setReturnValue(setBlock(pos, BlockReplacer.processBlock(state), i));
         }
