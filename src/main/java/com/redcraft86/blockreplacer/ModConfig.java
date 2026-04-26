@@ -23,7 +23,7 @@ public final class ModConfig extends JsonConfig {
 
     @Config
     @Comment("NOTE: This mod will NOT remove block items. Use KubeJS, Reliable Remover, or Item Obliterator for that.")
-    @Comment("      This system will NOTT run retroactively either, only new placements will get replaced.")
+    @Comment("      This system will NOT run retroactively either, only new placements will get replaced.")
     @Comment()
     @Comment("Uses a list for values but can be a single entry list if needed.")
     @Comment("Example 1: ")
